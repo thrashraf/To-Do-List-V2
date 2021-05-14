@@ -46,6 +46,17 @@ const item3 = new Item ({
 const defaultItems = [item1 ,item2 ,item3];
 
 
+/////New item scheme
+
+const Listscheme = {
+
+    name:String,
+    items:[itemsScheme],
+};
+
+const List = mongoose.model("List",Listscheme);
+
+
 
 
 ///////////////////////////////
@@ -72,6 +83,44 @@ app.get('/' , function(req , res ){
     });
 });
 
+
+app.get('/:customListName' , function(req , res){
+
+    const customListName = req.params.customListName;
+
+    List.findOne({name:customListName} , function (err , foundLists) {
+
+        if (!err){
+
+            if(!foundLists){
+
+               const list = new List({
+
+                name:customListName,
+                items:defaultItems,
+               });
+            list.save();
+            res.redirect('/' + customListName);
+               
+            }else{
+                
+                res.render("list",  {ListTitle : foundLists.name ,  newListItems : foundLists.items} )
+            }
+        }
+        
+    });
+    
+    
+    
+
+});
+
+
+
+
+
+
+
 app.post('/delete' , function (req, res) {
 
     const checkItemId = req.body.checkbox;
@@ -81,10 +130,8 @@ app.post('/delete' , function (req, res) {
         if (!err) {
             console.log("success remove item");
             res.redirect("/");
-        }
-        
+        }  
     })
-    
 })
 
 
@@ -106,10 +153,15 @@ app.post('/' , function(req , res){
 
 });
 
-app.get('/work' ,function(req , res){
 
-    res.render('list',{ListTitle: 'Work List' , newListItems: workItem})
-})
+// app.get('/category/:dynamicRoutes', function (req , res) {
+
+//     const dynamicRoutes = req.params.paramName
+    
+// })
+
+
+
 
 app.post('/work' , function(req ,res){
 
