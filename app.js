@@ -109,16 +109,8 @@ app.get('/:customListName' , function(req , res){
         }
         
     });
-    
-    
-    
 
 });
-
-
-
-
-
 
 
 app.post('/delete' , function (req, res) {
@@ -140,42 +132,48 @@ app.post('/' , function(req , res){
     
     
      const NewItem = req.body.input;
+     const listName = req.body.button;
 
      const item = new Item({
 
         name:NewItem,
      });
 
-     item.save();
      
+
+    if(listName === "Today"){
+
+    item.save();
     res.redirect('/')
 
+   }else{
+
+    List.findOne({name: listName}, function (err , foundListItem) {
+        
+        foundListItem.items.push(item);
+        foundListItem.save();
+        res.redirect("/"+ listName);    
+    });
+   }
 
 });
 
 
-// app.get('/category/:dynamicRoutes', function (req , res) {
-
-//     const dynamicRoutes = req.params.paramName
-    
-// })
 
 
+// app.post('/work' , function(req ,res){
 
 
-app.post('/work' , function(req ,res){
-
-
-    let item = req.body.newItem
+//     let item = req.body.newItem
 
 
   
-})
+// })
 
-app.get('/about' , function(req ,res){
+// app.get('/about' , function(req ,res){
 
-    res.render('about')
-})
+//     res.render('about')
+// })
 
 
 app.listen(3000 , function(res , req){
