@@ -2,6 +2,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
+const _ = require("lodash");
 
 
 
@@ -22,7 +23,7 @@ mongoose.connect('mongodb://localhost:27017/todolistDB' , {
     useUnifiedTopology: true
 });
 
-
+// mongoose DB scheme
 const itemsScheme = {
     name: String,
 };
@@ -59,8 +60,8 @@ const List = mongoose.model("List",Listscheme);
 
 
 
-///////////////////////////////
 
+// get route to root
 app.get('/' , function(req , res ){
 
     Item.find({} , function (err ,foundItems) {
@@ -83,10 +84,10 @@ app.get('/' , function(req , res ){
     });
 });
 
-
+// create new list
 app.get('/:customListName' , function(req , res){
 
-    const customListName = req.params.customListName;
+    const customListName = _.capitalize(req.params.customListName);
 
     List.findOne({name:customListName} , function (err , foundLists) {
 
@@ -112,21 +113,35 @@ app.get('/:customListName' , function(req , res){
 
 });
 
-
+// delete item on the list
 app.post('/delete' , function (req, res) {
 
     const checkItemId = req.body.checkbox;
+    const listName = req.body.listName;
 
-    Item.findByIdAndRemove(checkItemId , function (err) {
+    if(listName === "Today"){
 
-        if (!err) {
-            console.log("success remove item");
-            res.redirect("/");
-        }  
-    })
+        Item.findByIdAndRemove(checkItemId , function (err) {
+
+            if (!err) {
+                console.log("success remove item");
+                res.redirect("/");
+            }  
+        });
+    }else{
+
+        List.findOneAndUpdate({name: listName} , {$pull: {items: {_id: checkItemId}}} , function (err ,foundList) {
+            if(!err){
+                
+                res.redirect("/" + listName);
+            }
+        })
+    }
+
+    
 })
 
-
+// adding new item to DB
 app.post('/' , function(req , res){
 
     
@@ -137,9 +152,7 @@ app.post('/' , function(req , res){
      const item = new Item({
 
         name:NewItem,
-     });
-
-     
+     }); 
 
     if(listName === "Today"){
 
@@ -157,24 +170,6 @@ app.post('/' , function(req , res){
    }
 
 });
-
-
-
-
-// app.post('/work' , function(req ,res){
-
-
-//     let item = req.body.newItem
-
-
-  
-// })
-
-// app.get('/about' , function(req ,res){
-
-//     res.render('about')
-// })
-
 
 app.listen(3000 , function(res , req){
 
